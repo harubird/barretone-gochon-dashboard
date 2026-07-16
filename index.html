@@ -113,6 +113,9 @@ thead tr:nth-child(2) th { top: 38px; }
 }
 tbody tr:hover .td-member { background: #fafbff; }
 .m-name { font-size: 13px; font-weight: 800; }
+.sparkle-cell {
+  box-shadow: inset 0 0 0 2px #dc2626;
+}
 .m-sub  { font-size: 10px; color: #aaa; margin-top: 1px; }
 .m-memo { font-size: 10px; color: #6b7280; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
 .extendable { background: repeating-linear-gradient(45deg,#fff7ed,#fff7ed 4px,#fed7aa 4px,#fed7aa 8px) !important; cursor: pointer; }
@@ -777,11 +780,7 @@ function renderAll() {
 }
 
 function renderStats() {
-  const monthDates = new Set(WORK_DATES);
-  const vm = members.filter(m => {
-    const active = getActiveDates(m.startDate, m.extraDays);
-    return [...active].some(d => monthDates.has(d));
-  });
+  const vm = members.filter(m => m.startDate.slice(5,7) === currentMonth);
   const progMap = {};
   SCHED.forEach(s => { progMap[s.d] = s.prog; });
   const confirmedProgKeys = m => new Set(
@@ -880,6 +879,11 @@ function renderTable() {
       `<span class="mp ${m.done.has(p.k)?'done':'pending'}"
         style="background:${p.color}22;color:${p.color};">${p.label}</span>`
     ).join('');
+
+    const confirmedDatesSorted = Object.entries(m.times)
+      .filter(([d, v]) => v && v.status === 'confirmed')
+      .map(([d]) => d).sort();
+    const justCompleted = confirmedDatesSorted.length >= 4 && confirmedDatesSorted[3] === TODAY;
 
     const rowNum = members.indexOf(m) + 1;
     html += `<tr style="${m.cancelled ? 'background:#fff5f5;opacity:0.7;' : ''}">`;
